@@ -1,7 +1,18 @@
 #!/usr/bin/env ruby
-#
-require 'minitest/spec'
-require 'minitest/autorun'
+
+=begin
+An experiment in PORO fabrication, exploring the execution of a block in instance context to
+define accessors without cluttering the calling code with a yielded builder.
+
+  object = FastStruct do
+    author     'Sheldon Hearn'
+    email      'sheldonh@starjuice.net'
+    tags       [ :fabrication, :poro, :experiment ]
+    created_at Date.parse('2012-06-26')
+  end
+=end
+
+#require 'marshal'
 
 class FastStruct < BasicObject
 
@@ -15,15 +26,21 @@ class FastStruct < BasicObject
     end
   end
 
+  private
+
   def method_missing(method, *args)
+    serialized_value = ::Marshal.dump args.first
     instance_eval %Q{
       def self.#{method}
-        #{args.first.inspect}
+        ::Marshal.load #{serialized_value.inspect}
       end
     }
   end
 
 end
+
+require 'minitest/spec'
+require 'minitest/autorun'
 
 describe FastStruct do
 
@@ -45,6 +62,12 @@ describe FastStruct do
   it "assigns a symbol to an attribute reader" do
     object = FastStruct.new { symbolism :colon }
     object.symbolism.must_equal :colon
+  end
+
+  it "assigns a date to an attribute reader" do
+    require 'date'
+    object = FastStruct.new { created_at Date.parse('2012-06-26') }
+    object.created_at.must_equal Date.parse('2012-06-26')
   end
 
   it "assigns an array to an attribute reader" do
