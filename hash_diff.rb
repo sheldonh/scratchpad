@@ -90,7 +90,7 @@ module ObjectDiff
     end
 
     def keys_from_both_hashes
-      @old.keys.concat( @new.keys ).uniq
+      @old.keys.concat( @new.keys ).sort.uniq
     end
 
     def old_value
