@@ -3,98 +3,102 @@
 # An exercise in applying Robert C Martin's "Clean Code"
 # (ISBN-10: 0-13-235088-2), using a Hash differ as the subject.
 
-class HashDiff
+module ObjectDiff
 
-  def initialize(old, new)
-    @old = old
-    @new = new
-    @differences = nil
-  end
+  class Hash
 
-  def different?
-    not differences.empty?
-  end
-
-  def to_s
-    differences.join("\n")
-  end
-
-  def differences
-    @differences ||= first_time_comparison
-  end
-
-  private
-
-  def first_time_comparison
-    @differences = []
-    compare
-    @differences
-  end
-
-  def compare
-    diffable_keys.each do |key|
-      @key = key
-      add_differences_for_key
+    def initialize(old, new)
+      @old = old
+      @new = new
+      @differences = nil
     end
-  end
 
-  def diffable_keys
-    @old.keys.concat( @new.keys ).uniq
-  end
-
-  def add_differences_for_key
-    handle_removal or handle_addition or handle_change
-  end
-
-  def handle_removal
-    if removed?
-      add_removal
+    def different?
+      not differences.empty?
     end
-  end
 
-  def handle_addition
-    if added?
-      add_addition
+    def to_s
+      differences.join("\n")
     end
-  end
 
-  def handle_change
-    if changed?
-      add_change
+    def differences
+      @differences ||= first_time_comparison
     end
-  end
 
-  def removed?
-    @old.include?(@key) and not @new.include?(@key)
-  end
+    private
 
-  def added?
-    @new.include?(@key) and not @old.include?(@key)
-  end
+    def first_time_comparison
+      @differences = []
+      compare
+      @differences
+    end
 
-  def changed?
-    old_value != new_value
-  end
+    def compare
+      diffable_keys.each do |key|
+        @key = key
+        add_differences_for_key
+      end
+    end
 
-  def add_removal
-    @differences << Removal.new(@key, old_value)
-  end
+    def diffable_keys
+      @old.keys.concat( @new.keys ).uniq
+    end
 
-  def add_addition
-    @differences << Addition.new(@key, new_value)
-  end
+    def add_differences_for_key
+      handle_removal or handle_addition or handle_change
+    end
 
-  def add_change
-    @differences << Removal.new(@key, old_value)
-    @differences << Addition.new(@key, new_value)
-  end
+    def handle_removal
+      if removed?
+        add_removal
+      end
+    end
 
-  def old_value
-    @old[@key]
-  end
+    def handle_addition
+      if added?
+        add_addition
+      end
+    end
 
-  def new_value
-    @new[@key]
+    def handle_change
+      if changed?
+        add_change
+      end
+    end
+
+    def removed?
+      @old.include?(@key) and not @new.include?(@key)
+    end
+
+    def added?
+      @new.include?(@key) and not @old.include?(@key)
+    end
+
+    def changed?
+      old_value != new_value
+    end
+
+    def add_removal
+      @differences << Removal.new(@key, old_value)
+    end
+
+    def add_addition
+      @differences << Addition.new(@key, new_value)
+    end
+
+    def add_change
+      @differences << Removal.new(@key, old_value)
+      @differences << Addition.new(@key, new_value)
+    end
+
+    def old_value
+      @old[@key]
+    end
+
+    def new_value
+      @new[@key]
+    end
+
   end
 
   class Difference
@@ -136,17 +140,17 @@ end
 require 'minitest/spec'
 require 'minitest/autorun'
 
-describe HashDiff do
+describe ObjectDiff::Hash do
 
   describe "#different?" do
 
     it "is false for identical hashes" do
-      hash_diff = HashDiff.new( { no: :change }, { no: :change } )
+      hash_diff = ObjectDiff::Hash.new( { no: :change }, { no: :change } )
       hash_diff.different?.must_equal false
     end
 
     it "is true for different hashes" do
-      hash_diff = HashDiff.new( { change: :from }, { change: :to } )
+      hash_diff = ObjectDiff::Hash.new( { change: :from }, { change: :to } )
       hash_diff.different?.must_equal true
     end
 
@@ -155,29 +159,29 @@ describe HashDiff do
   describe "#differences" do
 
     it "is empty for identical hashes" do
-      hash_diff = HashDiff.new( { no: :change }, { no: :change } )
+      hash_diff = ObjectDiff::Hash.new( { no: :change }, { no: :change } )
       hash_diff.differences.must_be_empty
     end
 
     it "includes a removal when the old hash has a key missing from the new hash" do
-      hash_diff = HashDiff.new( { removed: :value }, {} )
-      hash_diff.differences.must_include HashDiff::Removal.new(:removed, :value)
+      hash_diff = ObjectDiff::Hash.new( { removed: :value }, {} )
+      hash_diff.differences.must_include ObjectDiff::Removal.new(:removed, :value)
     end
 
     it "includes an addition when the new hash has a key missing from the old hash" do
-      hash_diff = HashDiff.new( {}, { added: :value } )
-      hash_diff.differences.must_include HashDiff::Addition.new(:added, :value)
+      hash_diff = ObjectDiff::Hash.new( {}, { added: :value } )
+      hash_diff.differences.must_include ObjectDiff::Addition.new(:added, :value)
     end
 
     it "includes a removal and an addition when the value in the old hash is changed in the new hash" do
-      hash_diff = HashDiff.new( { change: :from }, { change: :to } )
-      hash_diff.differences.must_include HashDiff::Removal.new(:change, :from)
-      hash_diff.differences.must_include HashDiff::Addition.new(:change, :to)
+      hash_diff = ObjectDiff::Hash.new( { change: :from }, { change: :to } )
+      hash_diff.differences.must_include ObjectDiff::Removal.new(:change, :from)
+      hash_diff.differences.must_include ObjectDiff::Addition.new(:change, :to)
     end
 
     it "caches the first comparison to avoid recomparison on subsequent access" do
       old, new = { no: :change }, { no: :change }
-      hash_diff = HashDiff.new( old, new )
+      hash_diff = ObjectDiff::Hash.new( old, new )
 
       first_time_differences = hash_diff.differences
       new[:change] = true
