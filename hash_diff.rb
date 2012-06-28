@@ -137,42 +137,41 @@ module ObjectDiff
 
   end
 
-  require 'yaml'
-
-  class Example
-
-    def initialize(example)
-      @example = example
-    end
-
-    def old_hash
-      example_config['old']
-    end
-
-    def new_hash
-      example_config['new']
-    end
-
-    def expected_diff_string
-      everything_after_dot_dot_dot
-    end
-
-    private
-
-    def example_config
-      YAML.load(@example)
-    end
-
-    def everything_after_dot_dot_dot
-      @example.gsub(/\A.*^\.\.\.\n/m, '')
-    end
-
-  end
-
 end
 
 require 'minitest/spec'
 require 'minitest/autorun'
+require 'yaml'
+
+class ObjectDiffHashExample
+
+  def initialize(example)
+    @example = example
+  end
+
+  def old_hash
+    example_config['old']
+  end
+
+  def new_hash
+    example_config['new']
+  end
+
+  def expected_diff_string
+    everything_after_dot_dot_dot
+  end
+
+  private
+
+  def example_config
+    YAML.load(@example)
+  end
+
+  def everything_after_dot_dot_dot
+    @example.gsub(/\A.*^\.\.\.\n/m, '')
+  end
+
+end
 
 describe ObjectDiff::Hash do
 
@@ -243,7 +242,7 @@ describe ObjectDiff::Hash do
     Dir.glob('*-test.txt') do |filename|
 
       it "fulfills the example described in #{filename}" do
-        example = ObjectDiff::Example.new File.read(filename)
+        example = ObjectDiffHashExample.new File.read(filename)
         hash_diff = ObjectDiff::Hash.new( example.old_hash, example.new_hash )
         hash_diff.to_s.must_equal example.expected_diff_string
       end
