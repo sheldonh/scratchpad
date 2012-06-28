@@ -18,7 +18,7 @@ module ObjectDiff
     end
 
     def to_s
-      differences.join("\n")
+      differences.collect { |o| "#{o}\n" }.join
     end
 
     def differences
@@ -190,4 +190,18 @@ describe ObjectDiff::Hash do
 
   end
 
-end
+  describe "#to_s" do
+
+    it "produces an empty string for identical hashes" do
+      hash_diff = ObjectDiff::Hash.new( { no: :change }, { no: :change } )
+      hash_diff.to_s.must_equal ''
+    end
+
+    it "produces unified diff output for different hashes" do
+      hash_diff = ObjectDiff::Hash.new( { change: :from }, { change: :to } )
+      hash_diff.to_s.must_equal "- :change: :from\n+ :change: :to\n"
+    end
+
+  end
+
+end 
