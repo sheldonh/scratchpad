@@ -235,10 +235,6 @@ describe ObjectDiff::Hash do
       hash_diff.to_s.must_equal "- :change: :from\n+ :change: :to\n"
     end
 
-  end
-
-  describe "examples" do
-
     Dir.glob('*-test.txt') do |filename|
 
       it "fulfills the example described in #{filename}" do
