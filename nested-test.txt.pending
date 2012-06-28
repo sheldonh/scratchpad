@@ -1,0 +1,18 @@
+---
+old:
+  :foo: :old
+  :bar:
+    :removed: :value
+    :changed: :old
+new:
+  :foo: :new
+  :bar:
+    :changed: :new
+    :added: :value
+...
++ :bar: :added: :value
+- :bar: :changed: :old
++ :bar: :changed: :new
+- :bar: :removed: :value
+- :foo: :old
++ :foo: :new

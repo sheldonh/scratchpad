@@ -1,0 +1,12 @@
+---
+old:
+  removed: :symbol
+  changed: old
+new:
+  changed: new
+  added: 42
+...
++ "added": 42
+- "changed": "old"
++ "changed": "new"
+- "removed": :symbol
