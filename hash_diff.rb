@@ -42,55 +42,55 @@ module ObjectDiff
       end
     end
 
-    def keys_from_both_hashes
-      @old.keys.concat( @new.keys ).uniq
-    end
-
     def handle_differences_for_key
-      handle_removal or handle_addition or handle_change
+      handle_removal_for_key or handle_addition_for_key or handle_change_for_key
     end
 
-    def handle_removal
-      if removed?
-        add_removal
+    def handle_removal_for_key
+      if key_removed?
+        add_removal_for_key
       end
     end
 
-    def handle_addition
-      if added?
-        add_addition
+    def handle_addition_for_key
+      if key_added?
+        add_addition_for_key
       end
     end
 
-    def handle_change
-      if changed?
-        add_change
+    def handle_change_for_key
+      if key_value_changed?
+        add_change_for_key
       end
     end
 
-    def removed?
+    def key_removed?
       @old.include?(@key) and not @new.include?(@key)
     end
 
-    def added?
+    def key_added?
       @new.include?(@key) and not @old.include?(@key)
     end
 
-    def changed?
+    def key_value_changed?
       old_value != new_value
     end
 
-    def add_removal
+    def add_removal_for_key
       @differences << Removal.new(@key, old_value)
     end
 
-    def add_addition
+    def add_addition_for_key
       @differences << Addition.new(@key, new_value)
     end
 
-    def add_change
+    def add_change_for_key
       @differences << Removal.new(@key, old_value)
       @differences << Addition.new(@key, new_value)
+    end
+
+    def keys_from_both_hashes
+      @old.keys.concat( @new.keys ).uniq
     end
 
     def old_value
