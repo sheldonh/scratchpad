@@ -22,29 +22,31 @@ module ObjectDiff
     end
 
     def differences
-      @differences ||= first_time_comparison
+      calculate_differences_if_first_time
+      @differences
     end
 
     private
 
-    def first_time_comparison
-      @differences = []
-      compare
-      @differences
-    end
-
-    def compare
-      diffable_keys.each do |key|
-        @key = key
-        add_differences_for_key
+    def calculate_differences_if_first_time
+      if @differences.nil?
+        @differences = []
+        calculate_differences
       end
     end
 
-    def diffable_keys
+    def calculate_differences
+      keys_from_both_hashes.each do |key|
+        @key = key
+        handle_differences_for_key
+      end
+    end
+
+    def keys_from_both_hashes
       @old.keys.concat( @new.keys ).uniq
     end
 
-    def add_differences_for_key
+    def handle_differences_for_key
       handle_removal or handle_addition or handle_change
     end
 
